@@ -23,30 +23,33 @@ export const clerkWebhooks = async (req, res) => {
           imageUrl: data.image_url,
         };
         await User.create(userData);
-        return res.json({ success: true });
+        res.json({});
+        break;
       }
 
       case "user.updated": {
         const userData = {
-          email: data.email_addresses[0].email_address, // 
+          email: data.email_addresses[0].email_address, //
           name: data.first_name + " " + data.last_name,
           imageUrl: data.image_url,
         };
         await User.findByIdAndUpdate(data.id, userData);
-        return res.json({ success: true });
+        res.json({});
+        break;
       }
 
       case "user.deleted": {
         await User.findByIdAndDelete(data.id);
-        return res.json({ success: true });
+        res.json({});
+        break;
       }
 
       default:
-        return res.json({ success: true, message: "Unhandled event" });
+        break;
     }
   } catch (error) {
     
-    console.error("Webhook error:", error);
-    res.status(400).json({ success: false, message: error.message });
+    
+    res.json({ success: false, message: error.message });
   }
 };
