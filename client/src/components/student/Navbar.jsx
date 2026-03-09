@@ -4,12 +4,41 @@ import { Link } from 'react-router-dom';
 import { useClerk, UserButton , useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+
 const Navbar = () => {
     const navigate = useNavigate()
     const isCourseListPage = location.pathname.includes('/course-list');
-    const {isEducator} = useContext(AppContext)
+    const {isEducator , backendUrl,setIsEducator,getToken} = useContext(AppContext)
     const {openSignIn} = useClerk();
     const {user} = useUser();
+
+    const becomeEducator = async ()=>{
+      try {
+        if(isEducator){
+          navigate('/educator')
+          return;
+        }
+        const token = await getToken()
+        console.log(token)
+        const { data } = await axios.get(
+          backendUrl + "/api/educator/update-role",
+          { headers: { Authorization: `Bearer ${token}` } },
+        );
+        console.log(data)
+        if(data.success){
+          setIsEducator(true)
+          toast.success(data.message)
+        }else{
+          console.log("else block error")
+          toast.error(data.message)
+        }
+      } catch (error) {
+        console.log("catch block error");
+        toast.error(error.message)
+      }
+    }
 
   return (
     <div
@@ -29,9 +58,7 @@ const Navbar = () => {
           {user && (
             <>
               <button
-                onClick={() => {
-                  navigate("/educator");
-                }}
+                onClick={becomeEducator}
               >
                 {isEducator ? "Educator Dashboard" : "Become Educator"}
               </button>
@@ -57,9 +84,7 @@ const Navbar = () => {
           {user && (
             <>
               <button
-                onClick={() => {
-                  navigate("/educator");
-                }}
+                onClick={becomeEducator}
               >
                 {isEducator ? "Educator Dashboard" : "Become Educator"}
               </button>
